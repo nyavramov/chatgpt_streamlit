@@ -5,7 +5,6 @@ from streamlit_chat import message
 
 openai.api_key = st.secrets["OPENAI_TOKEN"]
 
-
 def generate_response(prompt):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -22,20 +21,17 @@ def generate_response(prompt):
 
 st.title("ChatGPT Web App")
 
-if 'generated' not in st.session_state:
-    st.session_state['generated'] = []
-
-if 'past' not in st.session_state:
-    st.session_state['past'] = []
+if 'chat_log' not in st.session_state:
+    st.session_state['chat_log'] = []
 
 user_input = st.text_input("You:", key='input')
 
 if user_input:
-    output = generate_response("User: " + user_input + "\nBot: ")
-    st.session_state['past'].append(user_input)
-    st.session_state['generated'].append(output)
+    bot_response = generate_response("User: " + user_input + "\nBot: ")
+    st.session_state['chat_log'].append((user_input, bot_response))
 
-if st.session_state['generated']:
-    for i in range(len(st.session_state['generated']) - 1, -1, -1):
-        message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-        message(st.session_state["generated"][i], key=str(i))
+if st.session_state['chat_log']:
+    # Loop through the chat messages directly without reversing
+    for i, (user_message, bot_message) in enumerate(st.session_state['chat_log']):
+        message(user_message, is_user=True, key=str(i) + '_user')
+        message(bot_message, key=str(i))
